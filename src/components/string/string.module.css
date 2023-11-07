@@ -1,0 +1,22 @@
+.form {
+  column-gap: 12px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.input {
+  max-width: 377px;
+  width: 100%;
+}
+
+.result {
+  display: flex;
+  flex-direction: row;
+  column-gap: 16px;
+  justify-content: center;
+  padding-top: 120px;
+}
