@@ -4,9 +4,10 @@ import styles from './string.module.css';
 import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
 import { useForm } from "../../hooks/useForm";
-import { swap } from "../../utils/utils.ts";
+import { delay, swap } from "../../utils/utils.ts";
 import { Circle } from "../ui/circle/circle";
 import { ElementStates } from "../../types/element-states";
+import { DELAY_IN_MS } from "../../constants/delays";
 
 
 type AlgData = AlgElement[];
@@ -19,7 +20,8 @@ type AlgElement = {
 
 export const StringComponent: React.FC = () => {
   const [isDisabled, setDisabled] = useState(true);
-  const [form, handleChange, setValues] = useForm({});
+  const [isProcess, setProcess] = useState(false);
+  const [form, handleChange] = useForm({});
   const [algState, setAlgState] = useState<AlgData>([]);
 
   useEffect(() => {
@@ -31,43 +33,51 @@ export const StringComponent: React.FC = () => {
   }, [form]);
 
 
-  const handleSubmit = (e: FormEvent): void => {
-    e.preventDefault();
-
-    const arr = Array.from(form.str).map((el: string, i: number) => {
+  const createArray = (str: string): AlgData => {
+    return Array.from(str).map((el: string, i: number) => {
       return {
         letter: el,
         index: i,
         state: ElementStates.Default,
       }
     });
-    setAlgState(arr)
-
-
-    reverse(arr);
   }
 
-  const reverse = (arr: AlgData): void => {
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    setAlgState([]);
+    setProcess(true);
+
+    const arr = createArray(form.str);
+    setAlgState(arr)
+    await reverse(arr);
+
+    setProcess(false);
+  }
+
+
+  const animate = async (arr: AlgData, firstEl: number, secondEl: number, state: ElementStates) => {
+    arr[firstEl].state = state;
+    arr[secondEl].state = state;
+
+    setAlgState([...arr]);
+
+    await delay(DELAY_IN_MS);
+  }
+
+
+  const reverse = async (arr: AlgData): Promise<void> => {
     let start = 0;
     let end = arr.length - 1;
 
     while (start <= end) {
-      const currStart = arr[start];
-      const currEnd = arr[end];
+      await animate(arr, start, end, ElementStates.Changing);
 
-      currStart.state = ElementStates.Changing;
-      currEnd.state = ElementStates.Changing;
-      setTimeout(() => {
-        setAlgState([...algState, ...arr]);
-      }, 1000)
+      swap(arr, start, end);
 
-      swap(arr, start++, end--);
-
-      currStart.state = ElementStates.Modified;
-      currEnd.state = ElementStates.Modified;
-      setTimeout(() => {
-        setAlgState([...algState, ...arr]);
-      }, 1000)
+      await animate(arr, start++, end--, ElementStates.Modified);
     }
   }
 
@@ -76,13 +86,12 @@ export const StringComponent: React.FC = () => {
       <form className={styles.form} onSubmit={handleSubmit}>
         <Input type={'text'} name={'str'} placeholder={'Введите текст'} maxLength={11} isLimitText={true}
                extraClass={styles.input} onInput={handleChange} value={form.str || ''}/>
-        <Button text={'Развернуть'} type={'submit'} isLoader={false} disabled={isDisabled}/>
+        <Button text={'Развернуть'} type={'submit'} isLoader={isProcess} disabled={isDisabled}/>
       </form>
       <section className={styles.result}>
         {algState.map((el, i) =>
           <Circle key={i} state={el.state} letter={el.letter}/>
         )}
-
       </section>
     </SolutionLayout>
   );
