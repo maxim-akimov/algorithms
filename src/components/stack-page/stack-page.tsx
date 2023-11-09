@@ -1,11 +1,12 @@
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { SolutionLayout } from "../ui/solution-layout/solution-layout";
 import styles from './stack.module.css';
 import { Button } from "../ui/button/button";
-import { Column } from "../ui/column/column";
 import { Input } from "../ui/input/input";
 import { useForm } from "../../hooks/useForm";
 import { ElementStates } from "../../types/element-states";
+import { Circle } from "../ui/circle/circle";
+import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 
 
 interface IStack<T> {
@@ -57,22 +58,26 @@ export const StackPage: React.FC = () => {
   const [isDisabledClear, setDisabledClear] = useState(true);
 
   const [stackState, setStackState] = useState<(string | number)[]>([]);
+  const [lastElState, setLasElState] = useState({ index: 0, state: ElementStates.Changing})
 
-  const [form, handleChange] = useForm();
+  const [form, handleChange, setValues] = useForm();
 
-  const stack = new Stack<number | string>();
+  const stack = useMemo(() => {
+    return new Stack<number | string>()
+  }, [])
 
 
   useEffect(() => {
     if (form.val && form.val.length > 0) {
       setDisabledAdd(false)
+    } else {
+      setDisabledAdd(true)
     }
   }, [form])
 
-  console.log(stack.getSize())
 
   useEffect(() => {
-    if (stackState && stackState.length > 0 ) {
+    if (stackState && stackState.length > 0) {
       setDisabledDelete(false);
       setDisabledClear(false);
     } else {
@@ -85,29 +90,54 @@ export const StackPage: React.FC = () => {
   const handleAddClick = (e: FormEvent) => {
     e.preventDefault();
 
+    setProcessAdd(true);
+
     stack.push(form.val);
-    console.log(stackState)
-    setStackState([...stackState, ...stack.getElements()]);
+    const elements = stack.getElements();
+    setStackState([...elements]);
+
+    setLasElState({ index: elements.length - 1, state: ElementStates.Changing})
+
+    setTimeout(() => {
+      setLasElState({ index: elements.length - 1, state: ElementStates.Default})
+      setProcessAdd(false);
+    }, SHORT_DELAY_IN_MS)
+
+    setValues({ val: '' });
   }
 
 
   const handleDeleteClick = (e: FormEvent) => {
     e.preventDefault();
 
+    setProcessDelete(true);
+
+    const elements = stack.getElements();
+
+    setLasElState({ index: elements.length - 1, state: ElementStates.Changing})
+
+    setTimeout(() => {
+      stack.pop();
+      setStackState([...stack.getElements()]);
+      setLasElState({ index: elements.length - 1, state: ElementStates.Default})
+      setProcessDelete(false);
+    }, SHORT_DELAY_IN_MS)
   }
 
 
   const handleClearClick = (e: FormEvent) => {
     e.preventDefault();
 
+    stack.clear();
+    setStackState([...stack.getElements()]);
   }
 
 
   return (
     <SolutionLayout title="Стек">
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleAddClick}>
         <Input name={'val'} type={'text'} placeholder={'Введите текст'} maxLength={4} isLimitText={true}
-               extraClass={styles.input} onChange={handleChange} value={form.val || ''} />
+               extraClass={styles.input} onChange={handleChange} value={form.val || ''}/>
         <Button text={'Добавить'} type={'button'} isLoader={isProcessAdd}
                 disabled={isDisabledAdd} onClick={handleAddClick}/>
         <Button text={'Удалить'} type={'button'} isLoader={isProcessDelete}
@@ -116,8 +146,9 @@ export const StackPage: React.FC = () => {
                 extraClass={styles.ml}/>
       </form>
       <section className={styles.result}>
-        {[].map((el, i) => (
-          <Column key={i} index={el} state={el}/>
+        {stackState.map((el, i) => (
+          <Circle key={i} index={i} state={(i === lastElState.index) ? lastElState.state : ElementStates.Default  } head={(i === 0) ? 'head' : ''}
+                  tail={(i === stackState.length - 1) ? 'tail' : ''} letter={el.toString()}/>
         ))}
       </section>
     </SolutionLayout>
