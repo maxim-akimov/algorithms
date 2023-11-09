@@ -20,14 +20,20 @@ type AlgElement = {
 
 
 export const SortingPage: React.FC = () => {
-  const [isDisabled, setDisabled] = useState(true);
+  const [isAscDisabled, setAscDisabled] = useState(false);
+  const [isDescDisabled, setDescDisabled] = useState(false);
+  const [isNewArrDisabled, setNewArrDisabled] = useState(false);
+
   const [isAscProcess, setAscProcess] = useState(false);
   const [isDescProcess, setDescProcess] = useState(false);
+
   const [algState, setAlgState] = useState<AlgData>([]);
+
   const [form, handleChange, setValues] = useForm({});
 
   useEffect(() => {
     setAlgState(randomArr());
+
     setValues({
       sortingType: 'selectionSorting',
     })
@@ -49,33 +55,6 @@ export const SortingPage: React.FC = () => {
   }
 
 
-  const handleAscSorting = async (e: FormEvent) => {
-    e.preventDefault();
-    console.log(form)
-
-    if (form.sortingType === 'selectionSorting') {
-      await selectionSorting(algState, Direction.Ascending);
-    }
-
-    if (form.sortingType === 'bubbleSorting') {
-      await bubbleSorting(algState, Direction.Ascending);
-    }
-  }
-
-
-  const handleDescSorting = async (e: FormEvent) => {
-    e.preventDefault();
-
-    if (form.sortingType === 'selectionSorting') {
-      await selectionSorting(algState, Direction.Descending);
-    }
-
-    if (form.sortingType === 'bubbleSorting') {
-      await bubbleSorting(algState, Direction.Descending);
-    }
-  }
-
-
   const createNewArray = (e: FormEvent) => {
     e.preventDefault();
 
@@ -83,71 +62,88 @@ export const SortingPage: React.FC = () => {
   }
 
 
+  const setProcess = (direction: Direction) => {
+    if (direction === Direction.Ascending) {
+      setAscProcess(true)
+      setDescDisabled(true);
+      setNewArrDisabled(true);
+    }
+
+    if (direction === Direction.Descending) {
+      setDescProcess(true)
+      setAscDisabled(true);
+      setNewArrDisabled(true);
+    }
+  }
+
+
+  const resetProcess = () => {
+    setAscProcess(false)
+    setDescProcess(false)
+    setAscDisabled(false);
+    setDescDisabled(false);
+    setNewArrDisabled(false);
+  }
+
+
+  const handleSortingClick = async (e: FormEvent, direction: Direction) => {
+    e.preventDefault();
+
+    setProcess(direction);
+
+    if (form.sortingType === 'selectionSorting') {
+      await selectionSorting(algState, direction);
+    }
+
+    if (form.sortingType === 'bubbleSorting') {
+      await bubbleSorting(algState, direction);
+    }
+
+    if (direction === Direction.Ascending) {
+      setAscProcess(false);
+    }
+
+    resetProcess();
+  }
+
+
+  const animate = async (arr: AlgData, elementsIndex: number[], state: ElementStates, delayTime: number = 0) => {
+    for (let i = 0; i < elementsIndex.length; i++) {
+      arr[elementsIndex[i]].state = state;
+    }
+
+    setAlgState([...arr]);
+    await delay(delayTime);
+  }
+
+
   const bubbleSorting = async (arr: AlgData, direction: Direction) => {
     const { length } = arr;
 
-    console.log([...arr]);
     for (let i = 0; i < length; i++) {
       for (let j = 0; j < length - i - 1; j++) {
-        arr[j].state = ElementStates.Changing;
-        arr[j + 1].state = ElementStates.Changing;
-        setAlgState([...arr]);
-        await delay(SHORT_DELAY_IN_MS);
+        await animate(arr, [j, j + 1], ElementStates.Changing, SHORT_DELAY_IN_MS);
 
-        if (arr[j].number > arr[j + 1].number) {
+        if ((direction === Direction.Ascending && arr[j].number > arr[j + 1].number)
+          || (direction === Direction.Descending && arr[j].number < arr[j + 1].number)) {
           swap(arr, j, j + 1);
-          // arr[j].state = ElementStates.Default;
-          // arr[j + 1].state = ElementStates.Default;
-          //
-          // if (j + 1 === arr.length - i - 1) {
-          //   arr[j+1].state = ElementStates.Modified;
-          // }
-
-          arr[j].state = ElementStates.Default;
-          arr[j + 1].state = ElementStates.Default;
-
-          setAlgState([...arr]);
-          await delay(SHORT_DELAY_IN_MS);
+          await animate(arr, [j, j + 1], ElementStates.Default);
         }
-        arr[j].state = ElementStates.Default;
-        arr[j + 1].state = ElementStates.Default;
+
+        await animate(arr, [j, j + 1], ElementStates.Default);
 
         if (j + 1 === arr.length - i - 1) {
           arr[j + 1].state = ElementStates.Modified;
-
         }
 
-        setAlgState([...arr]);
+        if (j === 0 && i === length - 2) {
+          arr[j].state = ElementStates.Modified;
+        }
       }
-      // arr[i].state = ElementStates.Modified;
-      // setAlgState([...arr]);
-      // await delay(SHORT_DELAY_IN_MS);
-    }
-    console.log([...arr]);
-    setAlgState(arr)
 
-    // for (let i = 0; i < length; i++) {
-    //   arr[i].state = ElementStates.Changing;
-    //   setAlgState([...arr]);
-    //   for (let j = 0; j < length - i - 1; j++) {
-    //     arr[j].state = ElementStates.Changing;
-    //     setAlgState([...arr]);
-    //     await delay(SHORT_DELAY_IN_MS);
-    //
-    //     if (arr[i].number < arr[j + 1].number) {
-    //       console.log([...arr])
-    //       const temp = arr[i];
-    //       arr[i] = arr[j + 1];
-    //       arr[j + 1] = temp;
-    //       console.log([...arr], i, j+1)
-    //
-    //       arr[i].state = ElementStates.Modified;
-    //       arr[j + 1].state = ElementStates.Modified;
-    //       setAlgState([...arr]);
-    //       await delay(SHORT_DELAY_IN_MS);
-    //     }
-    //   }
-    // }
+      setAlgState([...arr]);
+    }
+    setAlgState(arr)
   }
 
 
@@ -177,21 +173,22 @@ export const SortingPage: React.FC = () => {
       swap(arr, i, minMaxInd);
       setAlgState(arr);
     }
-
   }
 
 
   return (
     <SolutionLayout title="Сортировка массива">
       <form className={styles.form}>
-        <RadioInput name={'sortingType'} label={'Выбор'} value={'selectionSorting'} defaultChecked={true}
-                    onChange={handleChange}/>
-        <RadioInput name={'sortingType'} label={'Пузырёк'} value={'bubbleSorting'} onChange={handleChange}/>
+        <RadioInput name={'sortingType'} label={'Выбор'} value={'selectionSorting'}
+                    checked={form.sortingType === 'selectionSorting'}
+        onChange={handleChange}/>
+        <RadioInput name={'sortingType'} label={'Пузырёк'} value={'bubbleSorting'}
+                    checked={form.sortingType === 'bubbleSorting'} onChange={handleChange} />
         <Button text={'По возрастанию'} type={'button'} sorting={Direction.Ascending} isLoader={isAscProcess}
-                disabled={false} onClick={handleAscSorting}/>
+                disabled={isAscDisabled} onClick={(e) => handleSortingClick(e, Direction.Ascending)} extraClass={styles.ml} />
         <Button text={'По убиванию'} type={'button'} sorting={Direction.Descending} isLoader={isDescProcess}
-                disabled={false} onClick={handleDescSorting}/>
-        <Button text={'Новый массив'} type={'button'} onClick={createNewArray}/>
+                disabled={isDescDisabled} onClick={(e) => handleSortingClick(e, Direction.Descending)} />
+        <Button text={'Новый массив'} type={'button'} disabled={isNewArrDisabled} onClick={createNewArray} extraClass={styles.ml} />
       </form>
       <section className={styles.result}>
         {algState.map((el, i) => (
