@@ -1,0 +1,47 @@
+.form {
+  /*align-items: flex-start;*/
+  /*display: flex;*/
+  /*flex-direction: column;*/
+  /*flex-wrap: nowrap;*/
+  /*justify-content: center;*/
+  /*margin: 0 auto;*/
+  /*row-gap: 12px;*/
+  /*width: 100%;*/
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(2, auto);
+  max-width: 952px;
+  margin: 0 auto;
+  gap: 12px;
+}
+
+.add_index_btn {
+  grid-column: 2 / 4;
+}
+
+.delete_index_btn {
+  grid-column: 4 / 6;
+}
+
+.input {
+  max-width: 377px;
+  width: 100%;
+}
+
+.result {
+  column-gap: 16px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0 auto;
+  max-width: 950px;
+  padding-top: 120px;
+  row-gap: 48px;
+  width: 100%;
+}
+
+.ml {
+  margin-left: 68px;
+}
