@@ -8,14 +8,15 @@ import { Circle } from "../ui/circle/circle";
 import { ElementStates } from "../../types/element-states";
 import { ArrowIcon } from "../ui/icons/arrow-icon";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
+import { delay } from "../../utils/utils.ts";
 
 
 export class Node<T> {
-  value: T
+  value: T | ''
   next: Node<T> | null
 
-  constructor(value: T, next?: Node<T> | null) {
-    this.value = value;
+  constructor(value: T | '', next?: Node<T> | null) {
+    this.value = value || '';
     this.next = (next === undefined ? null : next);
   }
 }
@@ -23,13 +24,19 @@ export class Node<T> {
 interface ILinkedList<T> {
   append: (element: T) => void;
   insertAt: (element: T, position: number) => void;
+  remove: (val: T) => Node<T> | null;
   getSize: () => number;
-  print: () => void;
+  getElements: () => void;
 }
 
 type ElementsActionsState = {
   index: number | null;
   letter?: string;
+  state: ElementStates;
+};
+
+type ActiveElementsState = {
+  elements: number[];
   state: ElementStates;
 };
 
@@ -45,7 +52,6 @@ class LinkedList<T> implements ILinkedList<T> {
   insertAt(element: T, index: number) {
     if (index < 0 || index > this.size) {
       console.log('Enter a valid index');
-      console.log(index, this.size)
       return;
     } else {
       const node = new Node(element);
@@ -93,11 +99,29 @@ class LinkedList<T> implements ILinkedList<T> {
     this.size++;
   }
 
+  remove(val: T) {
+    let dummyHead = new Node<T>('');
+    dummyHead.next = this.head;
+    let curr: Node<T> | null = dummyHead;
+
+    // Ваш код...
+    while (curr && curr.next) {
+      const nextNode: Node<T> | null = curr.next;
+      if (nextNode && nextNode.value === val) {
+        curr.next = nextNode.next;
+        continue;
+      }
+      curr = nextNode;
+    }
+
+    return dummyHead.next;
+  };
+
   getSize() {
     return this.size;
   }
 
-  print() {
+  getElements() {
     let curr = this.head;
     let res = [];
     while (curr) {
@@ -114,9 +138,10 @@ export const ListPage: React.FC = () => {
     return new LinkedList<number | string>();
   }, []);
 
-  linkedList.append(Math.floor(Math.random() * 100))
-  linkedList.append(Math.floor(Math.random() * 100))
-  linkedList.append(Math.floor(Math.random() * 100))
+
+  for (let i = 0; i < 4; i++) {
+    linkedList.append(Math.floor(Math.random() * 100))
+  }
 
 
   const initialBtnState = { isDisabled: true, isProcess: false };
@@ -129,19 +154,26 @@ export const ListPage: React.FC = () => {
   const [addHeadBtnState, setAddHeadBtnState] = useState(initialBtnState);
   const [addTailBtnState, setAddTailBtnState] = useState(initialBtnState);
   const [addByIndexBtnState, setAddByIndexBtnState] = useState(initialBtnState);
+  const [removeHeadBtnState, setRemoveHeadBtnState] = useState(initialBtnState);
+  const [removeTailBtnState, setRemoveTailBtnState] = useState(initialBtnState);
+  const [removeByIndexBtnState, setRemoveByIndexBtnState] = useState(initialBtnState);
+  const [isDisabledValue, setDisabledValue] = useState(false)
+  const [isDisabledIndex, setDisabledIndex] = useState(false)
 
   const [form, handleChange, setValues] = useForm();
 
   // Стейты для реализации анимации
-  const [listState, setListState] = useState<(number | string | null)[]>(linkedList.print());
+  const [listState, setListState] = useState<(number | string | null)[]>(linkedList.getElements());
   // Стейт элемента, подлежащего вставке
   const [insertElement, setInsertElement] = useState<ElementsActionsState>(initialElementsState);
   // Стейт элемента, подлежащего удалению
   const [deleteElement, setDeleteElement] = useState<ElementsActionsState>(initialElementsState);
   // Стейт активного элемента списка (над которым произведены или будут производиться манипуляции)
-  const [activeElement, setActiveElement] = useState<ElementsActionsState>({
-    index: null,
-    state: ElementStates.Default
+  const [activeElement, setActiveElement] = useState<ElementsActionsState>(initialElementsState);
+  //
+  const [selectedElements, setSelectedElements] = useState<ActiveElementsState>({
+    elements: [],
+    state: ElementStates.Changing
   })
 
 
@@ -161,7 +193,31 @@ export const ListPage: React.FC = () => {
       setAddTailBtnState({ ...addTailBtnState, isDisabled: true });
 
     }
+
+    if (form.index && form.index.length > 0 && listState.length > 0) {
+      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isDisabled: false});
+    } else {
+      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isDisabled: true});
+    }
   }, [form])
+
+
+  useEffect(() => {
+    if (listState.length > 0) {
+      setRemoveHeadBtnState({ ...removeHeadBtnState, isDisabled: false });
+      setRemoveTailBtnState({ ...removeTailBtnState, isDisabled: false });
+      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isDisabled: false });
+    } else {
+      setRemoveHeadBtnState({ ...removeHeadBtnState, isDisabled: true });
+      setRemoveTailBtnState({ ...removeTailBtnState, isDisabled: true });
+      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isDisabled: true });
+    }
+
+    if (listState.length > 6) {
+      setDisabledValue(true);
+      setDisabledIndex(true);
+    }
+  }, [listState])
 
 
   const handleSubmit = (e: FormEvent) => {
@@ -169,75 +225,98 @@ export const ListPage: React.FC = () => {
   }
 
 
-  const handleAddHeadClick = (e: FormEvent) => {
+  const handleAddClick = (e: FormEvent, index?: number) => {
     e.preventDefault();
 
-    setAddHeadBtnState({...addHeadBtnState, isProcess: true});
+    if (index === undefined) {
+      setAddByIndexBtnState({ ...addByIndexBtnState, isProcess: true });
+      index = Number(form.index);
+    } else {
+      setAddHeadBtnState({ ...addHeadBtnState, isProcess: true });
+    }
 
-    linkedList.insertAt(form.value, 0);
+    linkedList.insertAt(form.value, index);
 
-    setInsertElement({ index: 0, letter: form.value, state: ElementStates.Changing });
+    setInsertElement({ index: index, letter: form.value, state: ElementStates.Changing });
 
     setTimeout(() => {
       const newListState = [...listState];
-      newListState.splice(0, 0, form.value);
+      newListState.splice(index || 0, 0, form.value);
+
       setListState([...newListState]);
+      setInsertElement(initialElementsState)
+      setActiveElement({ index: index as number, state: ElementStates.Modified });
     }, SHORT_DELAY_IN_MS);
 
     setTimeout(() => {
-      setActiveElement({ index: 0, state: ElementStates.Modified });
+      setActiveElement({ index: index as number, state: ElementStates.Default });
+      setAddByIndexBtnState({ ...addByIndexBtnState, isDisabled: true, isProcess: false });
+      setAddHeadBtnState({ ...addHeadBtnState, isProcess: false, isDisabled: true });
     }, SHORT_DELAY_IN_MS * 2);
-
-    setTimeout(() => {
-      setActiveElement({ index: 0, state: ElementStates.Default });
-      setInsertElement(initialElementsState)
-    }, SHORT_DELAY_IN_MS * 3);
 
 
     setValues({ value: '' });
-    setAddHeadBtnState({...addHeadBtnState, isProcess: false});
+
+
   }
 
 
   const handleAddTailClick = (e: FormEvent) => {
     e.preventDefault();
 
+    setAddTailBtnState({ ...addTailBtnState, isProcess: true });
+
     linkedList.append(form.value);
-    setListState([...listState, form.value]);
-    console.log(listState)
+
+    setInsertElement({ index: listState.length - 1, letter: form.value, state: ElementStates.Changing });
+
+    setTimeout(() => {
+      setListState([...listState, form.value]);
+      setInsertElement(initialElementsState)
+
+    }, SHORT_DELAY_IN_MS);
+
+    setTimeout(() => {
+      setActiveElement({ index: listState.length, state: ElementStates.Modified });
+    }, SHORT_DELAY_IN_MS);
+
+    setTimeout(() => {
+      setActiveElement({ index: listState.length, state: ElementStates.Default });
+      setAddTailBtnState({ ...addTailBtnState, isDisabled: true, isProcess: false });
+    }, SHORT_DELAY_IN_MS * 2);
+
     setValues({ value: '' });
   }
 
 
-  const handleAddByIndexClick = (e: FormEvent) => {
+  const handleRemoveClick = async (e: FormEvent, index?: number) => {
     e.preventDefault();
 
-    const index = Number(Number(form.index));
-    linkedList.insertAt(form.value, index);
+    setRemoveByIndexBtnState({ ...removeByIndexBtnState, isProcess: true});
 
-    const newListState = [...listState];
-    newListState.splice(index, 0, form.value);
-    setListState([...newListState]);
+    if (index === undefined) {
+      index = Number(form.index);
+    }
 
-    setValues({ value: '', index: '' });
-  }
+    const elements = [];
 
+    for (let ind = 0; ind <= index; ind++) {
+      elements.push(ind);
+      setSelectedElements({ ...selectedElements, elements: [...elements] })
+      await delay(SHORT_DELAY_IN_MS);
+    }
 
-  const handleRemoveHeadClick = (e: FormEvent) => {
-    e.preventDefault();
+    setDeleteElement({ index: index, letter: listState[index] + '', state: ElementStates.Changing });
+    setListState([...listState.map((el, i) => (i === index) ? el = '' : el)])
 
-  }
+    await setTimeout(() => {
+      setListState([...listState.filter((el, i) => (i !== index))]);
+      setSelectedElements({ ...selectedElements, elements: []});
+      setDeleteElement(initialElementsState);
+    }, SHORT_DELAY_IN_MS)
 
-
-  const handleRemoveTailClick = (e: FormEvent) => {
-    e.preventDefault();
-
-  }
-
-
-  const handleRemoveByIndexClick = (e: FormEvent) => {
-    e.preventDefault();
-
+    setRemoveByIndexBtnState({ isDisabled: true, isProcess: false});
+    setValues({ index: '' });
   }
 
 
@@ -246,45 +325,47 @@ export const ListPage: React.FC = () => {
       <form className={styles.form} onSubmit={handleSubmit}>
         <Input name={'value'} type={'text'} placeholder={'Введите значение'} maxLength={4} isLimitText={true}
                extraClass={styles.input} onChange={handleChange} value={form.value || ''}
-               disabled={false}/>
+               disabled={isDisabledValue}/>
         <Button name={'addHeadBtn'} text={'Добавить в head'} type={'button'}
                 isLoader={addHeadBtnState.isProcess}
-                disabled={addHeadBtnState.isDisabled} onClick={handleAddHeadClick}/>
+                disabled={addHeadBtnState.isDisabled} onClick={(e) => handleAddClick(e, 0)}/>
         <Button name={'addTailBtn'} text={'Добавить в tail'} type={'button'}
                 isLoader={addTailBtnState.isProcess}
                 disabled={addTailBtnState.isDisabled} onClick={handleAddTailClick}/>
         <Button name={'removeHeadBtn'} text={'Удалить из head'} type={'button'}
-                isLoader={false}
-                disabled={true} onClick={handleRemoveHeadClick}/>
+                isLoader={removeHeadBtnState.isProcess}
+                disabled={removeHeadBtnState.isDisabled} onClick={(e) => handleRemoveClick(e, 0)}/>
         <Button name={'removeTailBtn'} text={'Удалить из tail'} type={'button'}
-                isLoader={false}
-                disabled={true} onClick={handleRemoveTailClick}/>
+                isLoader={removeTailBtnState.isProcess}
+                disabled={removeTailBtnState.isDisabled} onClick={(e) => handleRemoveClick(e, listState.length - 1)}/>
 
         <Input name={'index'} type={'text'} placeholder={'Введите индекс'} maxLength={1} min={0}
                extraClass={styles.input} onChange={handleChange} value={form.index || ''}
-               disabled={false}/>
+               disabled={isDisabledIndex}/>
         <Button text={'Добавить по индексу'} type={'button'} isLoader={addByIndexBtnState.isProcess}
-                disabled={addByIndexBtnState.isDisabled} onClick={handleAddByIndexClick}
+                disabled={addByIndexBtnState.isDisabled} onClick={(e) => handleAddClick(e)}
                 extraClass={styles.add_index_btn}/>
-        <Button text={'Удалить по индексу'} type={'button'} isLoader={false}
-                disabled={true} onClick={handleRemoveByIndexClick}
+        <Button text={'Удалить по индексу'} type={'button'} isLoader={removeByIndexBtnState.isProcess}
+                disabled={removeByIndexBtnState.isDisabled} onClick={(e) => handleRemoveClick(e)}
                 extraClass={styles.delete_index_btn}/>
       </form>
       <section className={styles.result}>
         {listState.map((el, i) => (
-          <>
-            <Circle key={i} index={i}
-                    state={(i === activeElement.index) ? activeElement.state : ElementStates.Default}
-                    head={(i === insertElement.index) ? <Circle key={i} state={insertElement.state}
+          <React.Fragment key={i}>
+            <Circle index={i}
+                    state={(i === activeElement.index) ? activeElement.state
+                      : (selectedElements.elements.includes(i) ? selectedElements.state
+                        : ElementStates.Default)}
+                    head={(i === insertElement.index) ? <Circle state={insertElement.state}
                                                                 isSmall={true}
                                                                 letter={insertElement.letter}/> : (i === 0) ? 'head' : ''}
-                    tail={(i === deleteElement.index) ? <Circle key={i} state={deleteElement.state}
+                    tail={(i === deleteElement.index) ? <Circle state={deleteElement.state}
                                                                 isSmall={true}
-                                                                letter={insertElement.letter}/> : (i === listState.length - 1) ? 'tail' : ''}
+                                                                letter={deleteElement.letter}/> : (i === listState.length - 1) ? 'tail' : ''}
                     isSmall={false}
-            letter={el + ''} />
+                    letter={el + ''}/>
             {i < listState.length - 1 && <ArrowIcon/>}
-          </>
+          </React.Fragment>
         ))}
       </section>
     </SolutionLayout>
