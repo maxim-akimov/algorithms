@@ -4,28 +4,24 @@ import styles from './string.module.css';
 import { Input } from "../ui/input/input";
 import { Button } from "../ui/button/button";
 import { useForm } from "../../hooks/useForm";
-import { delay, swap } from "../../utils/utils.ts";
 import { Circle } from "../ui/circle/circle";
-import { ElementStates } from "../../types/element-states";
 import { DELAY_IN_MS } from "../../constants/delays";
+import { getReverseString } from "./utils";
+import { AlgState } from "./types";
 
-
-type AlgData = AlgElement[];
-
-type AlgElement = {
-  letter: string;
-  index: number;
-  state: ElementStates;
-}
 
 export const StringComponent: React.FC = () => {
+  const initialAlgorithmState: AlgState = {letters: [], states: []};
+
   const [isDisabled, setDisabled] = useState(true);
   const [isProcess, setProcess] = useState(false);
+  const [algorithmState, setAlgState] = useState<AlgState>(initialAlgorithmState);
+
   const [form, handleChange] = useForm({});
-  const [algState, setAlgState] = useState<AlgData>([]);
+
 
   useEffect(() => {
-    if (form.str && form.str.length > 0) {
+    if (form.value && form.value.length > 0) {
       setDisabled(false);
     } else {
       setDisabled(true);
@@ -33,64 +29,40 @@ export const StringComponent: React.FC = () => {
   }, [form]);
 
 
-  const createArray = (str: string): AlgData => {
-    return Array.from(str).map((el: string, i: number) => {
-      return {
-        letter: el,
-        index: i,
-        state: ElementStates.Default,
+
+  const startAlgorithm = (value: string) => {
+    const generator = getReverseString(value);
+
+    const intervalId = setInterval(() => {
+      const next = generator.next();
+      if (next.done) {
+        clearInterval(intervalId);
+        setProcess(false);
+      } else {
+        setAlgState({ ...next.value });
       }
-    });
+    }, DELAY_IN_MS)
   }
 
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    setAlgState([]);
     setProcess(true);
 
-    const arr = createArray(form.str);
-    setAlgState(arr)
-    await reverse(arr);
-
-    setProcess(false);
+    startAlgorithm(form.value);
   }
 
-
-  const animate = async (arr: AlgData, firstEl: number, secondEl: number, state: ElementStates) => {
-    arr[firstEl].state = state;
-    arr[secondEl].state = state;
-
-    setAlgState([...arr]);
-
-    await delay(DELAY_IN_MS);
-  }
-
-
-  const reverse = async (arr: AlgData): Promise<void> => {
-    let start = 0;
-    let end = arr.length - 1;
-
-    while (start <= end) {
-      await animate(arr, start, end, ElementStates.Changing);
-
-      swap(arr, start, end);
-
-      await animate(arr, start++, end--, ElementStates.Modified);
-    }
-  }
 
   return (
     <SolutionLayout title="Строка">
       <form className={styles.form} onSubmit={handleSubmit}>
-        <Input type={'text'} name={'str'} placeholder={'Введите текст'} maxLength={11} isLimitText={true}
-               extraClass={styles.input} onInput={handleChange} value={form.str || ''}/>
+        <Input type={'text'} name={'value'} placeholder={'Введите текст'} maxLength={11} isLimitText={true}
+               extraClass={styles.input} onInput={handleChange} value={form.value || ''}/>
         <Button text={'Развернуть'} type={'submit'} isLoader={isProcess} disabled={isDisabled}/>
       </form>
       <section className={styles.result}>
-        {algState.map((el, i) =>
-          <Circle key={i} state={el.state} letter={el.letter}/>
+        {algorithmState.letters && algorithmState.letters.map((el, i) =>
+          <Circle key={i} state={algorithmState.states[i]} letter={el}/>
         )}
       </section>
     </SolutionLayout>

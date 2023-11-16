@@ -6,19 +6,21 @@ import { Button } from "../ui/button/button";
 import { Circle } from "../ui/circle/circle";
 import { useForm } from "../../hooks/useForm";
 import { ElementStates } from "../../types/element-states";
-import { delay } from "../../utils/utils.ts";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
+import { getFibonacci } from "./utils";
 
 
 export const FibonacciPage: React.FC = () => {
   const [isDisabled, setDisabled] = useState(true);
   const [isProcess, setProcess] = useState(false);
+  const [algorithmState, setAlgorithmState] = useState<number[]>([]);
+
   const [form, handleChange] = useForm({});
-  const [algState, setAlgState] = useState<number[]>([]);
+
 
 
   useEffect(() => {
-    if (form.num && form.num.length > 0) {
+    if (form.value && form.value.length > 0) {
       setDisabled(false);
     } else {
       setDisabled(true);
@@ -26,51 +28,38 @@ export const FibonacciPage: React.FC = () => {
   }, [form]);
 
 
+  const startAlgorithm = (value: number) => {
+    const generator = getFibonacci(value);
+
+    const intervalId = setInterval(() => {
+      const next = generator.next();
+      if (next.done) {
+        clearInterval(intervalId);
+        setProcess(false);
+      } else {
+        setAlgorithmState([...algorithmState, ...next.value]);
+      }
+    }, SHORT_DELAY_IN_MS)
+  }
+
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    setAlgState([]);
     setProcess(true);
-
-    await fibonacci(Number(form.num));
-
-    setProcess(false);
-  }
-
-
-  const animate = async (n: number, arr: number[]) => {
-    arr.push(n);
-    setAlgState([...arr]);
-    await delay(SHORT_DELAY_IN_MS);
-  }
-
-
-  const fibonacci = async (n: number) => {
-    let i = 0;
-    let prev = 0;
-    let next = 1;
-    const arr: number[] = [];
-
-    while (i < n) {
-      next = prev + next;
-      prev = next - prev;
-      await animate(prev, arr);
-      i++;
-    }
-
-    return prev;
+    startAlgorithm(Number(form.value));
   }
 
 
   return (
     <SolutionLayout title="Последовательность Фибоначчи">
       <form className={styles.form} onSubmit={handleSubmit}>
-        <Input type={'number'} name={'num'} placeholder={'Введите число'}  min={1} max={19} isLimitText={true}
-               extraClass={styles.input} onInput={handleChange} value={form.num || ''}/>
+        <Input type={'number'} name={'value'} placeholder={'Введите число'}  min={1} max={19} isLimitText={true}
+               extraClass={styles.input} onInput={handleChange} value={form.value || ''}/>
         <Button text={'Рассчитать'} type={'submit'} isLoader={isProcess} disabled={isDisabled}/>
       </form>
       <section className={styles.result}>
-        {algState.map((el, i) =>
+        {algorithmState.map((el, i) =>
           <Circle key={i} state={ElementStates.Default} letter={el.toString()} index={i} />
         )}
       </section>
