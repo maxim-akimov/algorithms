@@ -9,133 +9,9 @@ import { ElementStates } from "../../types/element-states";
 import { ArrowIcon } from "../ui/icons/arrow-icon";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 import { delay } from "../../utils/utils.ts";
+import { LinkedList } from "./utils";
+import { ActiveElementsState, ElementsActionsState } from "./types";
 
-
-class Node<T> {
-  value: T | ''
-  next: Node<T> | null
-
-  constructor(value: T | '', next?: Node<T> | null) {
-    this.value = value || '';
-    this.next = (next === undefined ? null : next);
-  }
-}
-
-interface ILinkedList<T> {
-  append: (element: T) => void;
-  insertAt: (element: T, position: number) => void;
-  remove: (val: T) => void;
-  getSize: () => number;
-  getElements: () => void;
-}
-
-type ElementsActionsState = {
-  index: number | null;
-  letter?: string;
-  state: ElementStates;
-};
-
-type ActiveElementsState = {
-  elements: number[];
-  state: ElementStates;
-};
-
-class LinkedList<T> implements ILinkedList<T> {
-  private head: Node<T> | null;
-  private size: number;
-
-  constructor() {
-    this.head = null;
-    this.size = 0;
-  }
-
-  insertAt(element: T, index: number) {
-    if (index < 0 || index > this.size) {
-      console.log('Enter a valid index');
-      return;
-    } else {
-      const node = new Node(element);
-
-      // добавить элемент в начало списка
-      if (index === 0) {
-        node.next = this.head;
-        this.head = node;
-      } else {
-        let curr: Node<T> | null = this.head;
-        let currIndex = 0;
-
-        // перебрать элементы в списке до нужной позиции
-        while (currIndex < index && curr) {
-          if (++currIndex < index && curr.next) {
-            curr = curr.next;
-          }
-        }
-
-        // добавить элемент
-        if (curr && curr.next) {
-          node.next = curr.next;
-          curr.next = node;
-        }
-      }
-
-      this.size++;
-    }
-    console.log(this.getElements())
-
-  }
-
-  append(element: T) {
-    const node = new Node(element);
-    let current;
-
-    if (this.head === null) {
-      this.head = node;
-    } else {
-      current = this.head;
-      while (current.next) {
-        current = current.next;
-      }
-
-      current.next = node;
-    }
-    this.size++;
-    console.log(this.getElements())
-  }
-
-  remove(val: T) {
-    let dummyHead = new Node<T>('');
-    dummyHead.next = this.head;
-    let curr: Node<T> | null = dummyHead;
-
-    // Ваш код...
-    while (curr && curr.next) {
-      const nextNode: Node<T> | null = curr.next;
-      if (nextNode && nextNode.value === val) {
-        curr.next = nextNode.next;
-        continue;
-      }
-      curr = nextNode;
-    }
-    this.head = dummyHead.next;
-    console.log(this.getElements())
-
-    //return dummyHead.next;
-  };
-
-  getSize() {
-    return this.size;
-  }
-
-  getElements() {
-    let curr = this.head;
-    let res = [];
-    while (curr) {
-      res.push(curr.value);
-      curr = curr.next;
-    }
-    return res;
-  }
-}
 
 
 export const ListPage: React.FC = () => {
@@ -162,13 +38,9 @@ export const ListPage: React.FC = () => {
 
   const [form, handleChange, setValues] = useForm();
 
-  // Стейты для реализации анимации
   const [listState, setListState] = useState<(number | string)[]>([]);
-  // Стейт элемента, подлежащего вставке
   const [insertElement, setInsertElement] = useState<ElementsActionsState>(initialElementsState);
-  // Стейт элемента, подлежащего удалению
   const [deleteElement, setDeleteElement] = useState<ElementsActionsState>(initialElementsState);
-  // Стейт активного элемента списка (над которым произведены или будут производиться манипуляции)
   const [activeElement, setActiveElement] = useState<ElementsActionsState>(initialElementsState);
   //
   const [selectedElements, setSelectedElements] = useState<ActiveElementsState>({
@@ -199,13 +71,13 @@ export const ListPage: React.FC = () => {
       setAddHeadBtnState({ ...addHeadBtnState, isDisabled: true });
       setAddByIndexBtnState({ ...addByIndexBtnState, isDisabled: true });
       setAddTailBtnState({ ...addTailBtnState, isDisabled: true });
-
     }
 
     if (form.index && form.index.length > 0 && listState.length > 0) {
       setRemoveByIndexBtnState({ ...removeByIndexBtnState, isDisabled: false });
     } else {
-      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isDisabled: true });    }
+      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isDisabled: true });
+    }
 
     if (listState.length > 6) {
       setDisabledValue(true);
@@ -221,8 +93,6 @@ export const ListPage: React.FC = () => {
       setRemoveTailBtnState({ ...removeTailBtnState, isDisabled: true });
     }
   }, [form, listState])
-
-
 
 
   const handleSubmit = (e: FormEvent) => {
@@ -253,7 +123,11 @@ export const ListPage: React.FC = () => {
       linkedList.insertAt(form.value, index);
     }
 
-    setInsertElement({ index: (place === 'tail')? index - 1 : index, letter: form.value, state: ElementStates.Changing });
+    setInsertElement({
+      index: (place === 'tail') ? index - 1 : index,
+      letter: form.value,
+      state: ElementStates.Changing
+    });
 
     setTimeout(() => {
       setListState([...linkedList.getElements()]);
@@ -282,7 +156,7 @@ export const ListPage: React.FC = () => {
 
     if (index === undefined) {
       index = Number(form.index);
-      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isProcess: true});
+      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isProcess: true });
     } else if (index === 0) {
       setRemoveHeadBtnState({ ...removeHeadBtnState, isProcess: true });
     } else {
@@ -303,10 +177,10 @@ export const ListPage: React.FC = () => {
     setTimeout(() => {
       linkedList.remove(listState[index || 0])
       setListState([...linkedList.getElements()]);
-      setSelectedElements({ ...selectedElements, elements: []});
+      setSelectedElements({ ...selectedElements, elements: [] });
       setDeleteElement(initialElementsState);
 
-      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isProcess: false});
+      setRemoveByIndexBtnState({ ...removeByIndexBtnState, isProcess: false });
       setRemoveHeadBtnState({ ...removeHeadBtnState, isProcess: false });
       setRemoveTailBtnState({ ...removeTailBtnState, isProcess: false });
     }, SHORT_DELAY_IN_MS)

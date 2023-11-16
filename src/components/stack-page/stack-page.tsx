@@ -7,60 +7,22 @@ import { useForm } from "../../hooks/useForm";
 import { ElementStates } from "../../types/element-states";
 import { Circle } from "../ui/circle/circle";
 import { SHORT_DELAY_IN_MS } from "../../constants/delays";
-
-
-interface IStack<T> {
-  push: (item: T) => void;
-  pop: () => void;
-  peak: () => T | null;
-  clear: () => void;
-  getSize: () => number;
-  getElements: () => T[] | null;
-}
-
-type StackStateElement = {
-  element: string | number;
-  state: ElementStates
-}
-
-
-class Stack<T> implements IStack<T> {
-  private container: T[] = [];
-
-  push = (item: T): void => {
-    this.container.push(item);
-  };
-
-  pop = (): void => {
-    this.container.pop();
-  };
-
-  peak = (): T | null => {
-    return this.container[this.container.length - 1] || null;
-  };
-
-  clear = () => {
-    this.container = [];
-  }
-
-  getSize = () => this.container.length;
-
-  getElements = () => this.container;
-}
+import { Stack } from "./utils";
+import { BtnState } from "../../types/states";
 
 
 export const StackPage: React.FC = () => {
-  const [isProcessAdd, setProcessAdd] = useState(false);
-  const [isProcessDelete, setProcessDelete] = useState(false);
+  const initialBtnState: BtnState = { isDisabled: true, isProcess: false };
 
-  const [isDisabledAdd, setDisabledAdd] = useState(true);
-  const [isDisabledDelete, setDisabledDelete] = useState(true);
-  const [isDisabledClear, setDisabledClear] = useState(true);
+  const [addBtnState, setAddBtnState] = useState<BtnState>(initialBtnState);
+  const [removeBtnState, setRemoveBtnState] = useState<BtnState>(initialBtnState);
+  const [clearBtnState, setClearBtnState] = useState({ isDisabled: false });
 
   const [stackState, setStackState] = useState<(string | number)[]>([]);
-  const [lastElState, setLasElState] = useState({ index: 0, state: ElementStates.Changing})
+  const [lastElState, setLastElState] = useState({ index: 0, state: ElementStates.Changing })
 
   const [form, handleChange, setValues] = useForm();
+
 
   const stack = useMemo(() => {
     return new Stack<number | string>()
@@ -69,20 +31,20 @@ export const StackPage: React.FC = () => {
 
   useEffect(() => {
     if (form.val && form.val.length > 0) {
-      setDisabledAdd(false)
+      setAddBtnState({ ...addBtnState, isDisabled: false})
     } else {
-      setDisabledAdd(true)
+      setAddBtnState({ ...addBtnState, isDisabled: true})
     }
-  }, [form])
+  }, [form, stackState])
 
 
   useEffect(() => {
     if (stackState && stackState.length > 0) {
-      setDisabledDelete(false);
-      setDisabledClear(false);
+      setRemoveBtnState({ ...removeBtnState, isDisabled: false });
+      setClearBtnState({ ...clearBtnState, isDisabled: false });
     } else {
-      setDisabledDelete(true);
-      setDisabledClear(true);
+      setRemoveBtnState({ ...removeBtnState, isDisabled: true });
+      setClearBtnState({ ...clearBtnState, isDisabled: true });
     }
   }, [stackState])
 
@@ -90,17 +52,18 @@ export const StackPage: React.FC = () => {
   const handleAddClick = (e: FormEvent) => {
     e.preventDefault();
 
-    setProcessAdd(true);
+    setAddBtnState({ ...addBtnState, isProcess: true })
+    setRemoveBtnState({ ...removeBtnState, isDisabled: true})
+    setClearBtnState({ ...clearBtnState, isDisabled: true })
 
     stack.push(form.val);
     const elements = stack.getElements();
     setStackState([...elements]);
-
-    setLasElState({ index: elements.length - 1, state: ElementStates.Changing})
+    setLastElState({ index: elements.length - 1, state: ElementStates.Changing })
 
     setTimeout(() => {
-      setLasElState({ index: elements.length - 1, state: ElementStates.Default})
-      setProcessAdd(false);
+      setLastElState({ index: elements.length - 1, state: ElementStates.Default })
+      setAddBtnState({ ...addBtnState, isProcess: false })
     }, SHORT_DELAY_IN_MS)
 
     setValues({ val: '' });
@@ -110,17 +73,18 @@ export const StackPage: React.FC = () => {
   const handleDeleteClick = (e: FormEvent) => {
     e.preventDefault();
 
-    setProcessDelete(true);
+    setRemoveBtnState({ ...removeBtnState, isProcess: true })
+    setAddBtnState({ ...addBtnState, isDisabled: true })
+    setClearBtnState({ ...clearBtnState, isDisabled: true })
 
     const elements = stack.getElements();
-
-    setLasElState({ index: elements.length - 1, state: ElementStates.Changing})
+    setLastElState({ index: elements.length - 1, state: ElementStates.Changing })
 
     setTimeout(() => {
       stack.pop();
       setStackState([...stack.getElements()]);
-      setLasElState({ index: elements.length - 1, state: ElementStates.Default})
-      setProcessDelete(false);
+      setLastElState({ index: elements.length - 1, state: ElementStates.Default });
+      setRemoveBtnState({ ...removeBtnState, isProcess: false })
     }, SHORT_DELAY_IN_MS)
   }
 
@@ -138,16 +102,17 @@ export const StackPage: React.FC = () => {
       <form className={styles.form} onSubmit={handleAddClick}>
         <Input name={'val'} type={'text'} placeholder={'Введите текст'} maxLength={4} isLimitText={true}
                extraClass={styles.input} onChange={handleChange} value={form.val || ''}/>
-        <Button text={'Добавить'} type={'button'} isLoader={isProcessAdd}
-                disabled={isDisabledAdd} onClick={handleAddClick}/>
-        <Button text={'Удалить'} type={'button'} isLoader={isProcessDelete}
-                disabled={isDisabledDelete} onClick={handleDeleteClick}/>
-        <Button text={'Очистить'} type={'button'} disabled={isDisabledClear} onClick={handleClearClick}
+        <Button text={'Добавить'} type={'button'} isLoader={addBtnState.isProcess}
+                disabled={addBtnState.isDisabled} onClick={handleAddClick}/>
+        <Button text={'Удалить'} type={'button'} isLoader={removeBtnState.isProcess}
+                disabled={removeBtnState.isDisabled} onClick={handleDeleteClick}/>
+        <Button text={'Очистить'} type={'button'} disabled={clearBtnState.isDisabled} onClick={handleClearClick}
                 extraClass={styles.ml}/>
       </form>
       <section className={styles.result}>
         {stackState.map((el, i) => (
-          <Circle key={i} index={i} state={(i === lastElState.index) ? lastElState.state : ElementStates.Default  } head={(i === 0) ? 'head' : ''}
+          <Circle key={i} index={i} state={(i === lastElState.index) ? lastElState.state : ElementStates.Default}
+                  head={(i === 0) ? 'head' : ''}
                   tail={(i === stackState.length - 1) ? 'tail' : ''} letter={el.toString()}/>
         ))}
       </section>

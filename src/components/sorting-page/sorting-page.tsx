@@ -9,7 +9,7 @@ import { Column } from "../ui/column/column";
 import { getRandomArray, sortBubble, sortSelection } from "./utils";
 import { AlgState } from "./types";
 import { BtnState } from "../../types/states";
-import { DELAY_IN_MS, SHORT_DELAY_IN_MS } from "../../constants/delays";
+import { SHORT_DELAY_IN_MS } from "../../constants/delays";
 
 
 export const SortingPage: React.FC = () => {
@@ -69,7 +69,7 @@ export const SortingPage: React.FC = () => {
     if (form.sortingType === 'selectionSorting') {
       generator = sortSelection(arr, direction);
     } else if (form.sortingType === 'bubbleSorting') {
-      //generator = sortBubble(arr, direction);
+      generator = sortBubble(arr, direction);
     }
 
     const intervalId = setInterval(() => {
@@ -78,7 +78,6 @@ export const SortingPage: React.FC = () => {
         clearInterval(intervalId);
         resetProcess();
       } else {
-        console.log(next.value)
         setAlgorithmState({...next.value});
       }
     }, SHORT_DELAY_IN_MS)
@@ -91,75 +90,6 @@ export const SortingPage: React.FC = () => {
     setProcess(direction);
     startAlgorithm([...algorithmState.numbers], direction);
   }
-
-
-  // const animate = async (arr: AlgData, elementsIndex: number[], state: ElementStates, delayTime: number = 0) => {
-  //   for (let i = 0; i < elementsIndex.length; i++) {
-  //     arr[elementsIndex[i]].state = state;
-  //   }
-  //
-  //   setAlgorithmState([...arr]);
-  //   await delay(delayTime);
-  // }
-
-
-  // const bubbleSorting = async (arr: AlgData, direction: Direction) => {
-  //   const { length } = arr;
-  //
-  //   for (let i = 0; i < length; i++) {
-  //     for (let j = 0; j < length - i - 1; j++) {
-  //       await animate(arr, [j, j + 1], ElementStates.Changing, SHORT_DELAY_IN_MS);
-  //
-  //       if ((direction === Direction.Ascending && arr[j].number > arr[j + 1].number)
-  //         || (direction === Direction.Descending && arr[j].number < arr[j + 1].number)) {
-  //         swap(arr, j, j + 1);
-  //         await animate(arr, [j, j + 1], ElementStates.Default);
-  //       }
-  //
-  //       await animate(arr, [j, j + 1], ElementStates.Default);
-  //
-  //       if (j + 1 === arr.length - i - 1) {
-  //         arr[j + 1].state = ElementStates.Modified;
-  //       }
-  //
-  //       if (j === 0 && i === length - 2) {
-  //         arr[j].state = ElementStates.Modified;
-  //       }
-  //     }
-  //
-  //     setAlgorithmState([...arr]);
-  //   }
-  //   setAlgorithmState(arr)
-  // }
-
-
-  // const selectionSorting = async (arr: AlgData, direction: Direction) => {
-  //   const { length } = arr;
-  //
-  //   for (let i = 0; i < length; i++) {
-  //     arr[i].state = ElementStates.Changing;
-  //     setAlgorithmState([...arr]);
-  //
-  //     let minMaxInd = i;
-  //     for (let k = i; k < length; k++) {
-  //       arr[k].state = ElementStates.Changing;
-  //       setAlgorithmState([...arr]);
-  //       await delay(SHORT_DELAY_IN_MS);
-  //
-  //       if ((direction === Direction.Descending && arr[k].number > arr[minMaxInd].number)
-  //         || direction === Direction.Ascending && arr[k].number < arr[minMaxInd].number) {
-  //         arr[minMaxInd].state = ElementStates.Default;
-  //         minMaxInd = k;
-  //       } else {
-  //         arr[k].state = ElementStates.Default;
-  //       }
-  //     }
-  //     await delay(SHORT_DELAY_IN_MS);
-  //     arr[minMaxInd].state = ElementStates.Modified;
-  //     swap(arr, i, minMaxInd);
-  //     setAlgorithmState(arr);
-  //   }
-  // }
 
 
   return (
