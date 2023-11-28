@@ -6,6 +6,14 @@ import { AlgState } from "./types";
 export function* getReverseString(str: string): Generator<AlgState> {
   const arr = Array.from(str);
 
+  if (arr.length === 1) {
+    yield {
+      letters: arr,
+      states: [ElementStates.Modified]
+    };
+    return;
+  }
+
   let start = 0;
   let end = arr.length - 1;
 
