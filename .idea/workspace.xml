@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="f3f98898-c7d0-4a78-b803-af9d3035a482" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/cypress/e2e/containts/constaints.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cypress/e2e/list/is-correct-list-work.cy.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cypress/e2e/queue/is-correct-queue-work.cy.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cypress/e2e/stack/is-correct-stack-work.cy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/cypress.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/app/is-available.cy.js" beforeDir="false" afterPath="$PROJECT_DIR$/cypress/e2e/app/is-available.cy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/app/is-correct-routes.cy.js" beforeDir="false" afterPath="$PROJECT_DIR$/cypress/e2e/app/is-correct-routes.cy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/fibonacci/is-correct-num.cy.js" beforeDir="false" afterPath="$PROJECT_DIR$/cypress/e2e/fibonacci/is-correct-num.cy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/fibonacci/is-disabled-btn-with-empty-input.cy.js" beforeDir="false" afterPath="$PROJECT_DIR$/cypress/e2e/fibonacci/is-disabled-btn-with-empty-input.cy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/list/is-correct-default-list.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/list/is-correct-head-add.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/list/is-correct-head-remove.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/list/is-correct-index-add.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/list/is-correct-index-remove.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/list/is-correct-tail-add.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/list/is-correct-tail-remove.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/list/is-disabled-btn-with-empty-input.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/list/is-disabled-idx-btn-with-empty-input.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/queue/is-correct-element-add.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/queue/is-correct-element-remove.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/queue/is-correct-queue-clean.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/queue/is-disabled-btn-with-empty-input.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/stack/is-correct-element-add.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/stack/is-correct-element-remove.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/stack/is-correct-stack-clean.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/stack/is-disabled-btn-with-empty-input.cy.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/string/is-correct-reverse.cy.js" beforeDir="false" afterPath="$PROJECT_DIR$/cypress/e2e/string/is-correct-reverse.cy.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cypress/e2e/string/is-disabled-btn-with-empty-input.cy.js" beforeDir="false" afterPath="$PROJECT_DIR$/cypress/e2e/string/is-disabled-btn-with-empty-input.cy.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2Yoc2QCA6lrnC9JvIFZ2gBYL8Ke" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "D:/OpenServer/open_server_panel_5_4_3/domains/practicum/algorithms/cypress/e2e/list",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "D:\\OpenServer\\open_server_panel_5_4_3\\domains\\practicum\\algorithms\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\OpenServer\open_server_panel_5_4_3\domains\practicum\algorithms\cypress\e2e\list" />
+      <recent name="D:\OpenServer\open_server_panel_5_4_3\domains\practicum\algorithms\cypress\e2e\queue" />
+      <recent name="D:\OpenServer\open_server_panel_5_4_3\domains\practicum\algorithms\cypress\e2e\stack" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f3f98898-c7d0-4a78-b803-af9d3035a482" name="Changes" comment="" />
+      <created>1701195176458</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1701195176458</updated>
+      <workItem from="1701195179630" duration="31347000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+</project>

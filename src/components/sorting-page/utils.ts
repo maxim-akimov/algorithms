@@ -24,6 +24,14 @@ export const getRandomArray = (): AlgState => {
 export function* sortSelection(arr: number[], direction: Direction): Generator<AlgState> {
   const { length } = arr;
 
+  if (length === 1 ) {
+    yield {
+      numbers: arr,
+      states:[ElementStates.Modified]
+    }
+    return;
+  }
+
   for (let i = 0; i < length; i++) {
     yield {
       numbers: arr,
@@ -64,6 +72,14 @@ export function* sortSelection(arr: number[], direction: Direction): Generator<A
 
 export function* sortBubble(arr: number[], direction: Direction) {
   const { length } = arr;
+
+  if (length === 1 ) {
+    yield {
+      numbers: arr,
+      states:[ElementStates.Modified]
+    }
+    return;
+  }
 
   for (let i = 0; i < length; i++) {
     for (let j = 0; j < length - i - 1; j++) {
